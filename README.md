@@ -168,7 +168,6 @@ Burada ise podlar gözüküyor.
 Burada ise charts/wordpress/templates altına externaldb-secret.yaml dosyamı yani secret.yamlımı kurdum.
 ![alt text](assets/image-20.png)
 
-![alt text](assets/image-22.png)
 
 Daha sonrasında ise values.yaml altında mariadb ayarlarını değiştirerek external secretten database şifresinin gelmesini sağladım.
 
@@ -190,7 +189,7 @@ root@mert-k3slab-server:/home/vagrant/helm-practice# kubectl port-forward svc/my
 
 böyle yaparak kendi bilgisayarımda ulaşabildim wordpresse http ile ssl olmadan.
 
-![alt text](assets/image-25.png)
+![alt text](assets/image-24.png)
 
 
 
