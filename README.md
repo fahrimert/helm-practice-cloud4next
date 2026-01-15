@@ -101,7 +101,7 @@ Güncelleme işlemlerini yaparken şu komudu kullandım:
 Repomda bulunan hello-app klasörünün altında python flask ile kurmuş olduğum istek attığım zaman "Hello World! Kubernetes ve Helm çalışıyor" responsesini veren uygulama ile Dockerfile sini yazdım
 
 Daha sonrasında helm ile templatesini kurmadan öncesinde:
-![alt text](assets/image-18.png)
+![alt text](assets/image-30.png)
 
 Yeni bir ansible dosyası kurmam gerekti. Bu sayede helm chart ile kullanabileceğim hello-app uygulamamın imagesini Vm`in içerisine koymuş oldum.
 
@@ -160,13 +160,14 @@ Daha sonrasında şu komut ile wordpress podlarımı kurdum default values ayarl
 ```bash
 helm install my-blog ./wordpress
 ```
-![alt text](assets/image-20.png)
 Burada ise podlar gözüküyor.
-![alt text](assets/image-23.png)
+![alt text](assets/image-31.png)
 
-Ekstra Zorluk: Veritabanı şifresini düz metin olarak değil, bir Secret objesi üzerinden Helm ile deploy edin. (secret.yaml).
+##  Veritabanı şifresini düz metin olarak değil, bir Secret objesi üzerinden Helm ile deploy edin. 
 
 Burada ise charts/wordpress/templates altına externaldb-secret.yaml dosyamı yani secret.yamlımı kurdum.
+![alt text](assets/image-20.png)
+
 ![alt text](assets/image-22.png)
 
 Daha sonrasında ise values.yaml altında mariadb ayarlarını değiştirerek external secretten database şifresinin gelmesini sağladım.
@@ -189,7 +190,8 @@ root@mert-k3slab-server:/home/vagrant/helm-practice# kubectl port-forward svc/my
 
 böyle yaparak kendi bilgisayarımda ulaşabildim wordpresse http ile ssl olmadan.
 
-![alt text](assets/image-23.png)
+![alt text](assets/image-25.png)
+
 
 
 ## Worldpress'e DNS tanımlayın ve HTTPS  çalışmasını sağlayın.
@@ -202,14 +204,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -out tls.crt \
   -subj "/CN=my-blog.local/O=MertLab"
 ```
-
-![alt text](assets/image-24.png)
-
-bu sertifikayı ürettikten sonrasında helm içerisinde kalmayı seçtiğim için wordpress values.yaml ayarlarımı güncelledim tls kullanmak üzere secret üzerinden.
-
-![alt text](assets/image-25.png)
-
-daha sonrasında birdaha helm upgrade çalıştırdım 
+bu sertifikayı ürettikten sonrasında helm içerisinde kalmayı seçtiğim için wordpress values.yaml ayarlarımı güncelledim tls kullanmak üzere secret üzerinden.daha sonrasında birdaha helm upgrade çalıştırdım 
 
 daha sonrasında kendi bilgisayarıma port-forward yaptığım için kendi bilgisayarımda hostu tanımlamam gerekti 
 
