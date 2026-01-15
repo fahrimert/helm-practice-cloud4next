@@ -148,4 +148,79 @@ helm rollback my-nginx 1
 
 ve sonrasında ise nginx podlarım yeniden çalışmaya devam etti.
 
+##  Final Projesi (Full Stack)
+![alt text](assets/image-19.png)
 
+Öncelikli olarak şu komut ile wordpress repomu çektim 
+```bash
+helm pull bitnami/wordpress --untar
+```
+Daha sonrasında şu komut ile wordpress podlarımı kurdum default values ayarları ile.
+
+```bash
+helm install my-blog ./wordpress
+```
+![alt text](assets/image-20.png)
+Burada ise podlar gözüküyor.
+![alt text](assets/image-23.png)
+
+Ekstra Zorluk: Veritabanı şifresini düz metin olarak değil, bir Secret objesi üzerinden Helm ile deploy edin. (secret.yaml).
+
+Burada ise charts/wordpress/templates altına externaldb-secret.yaml dosyamı yani secret.yamlımı kurdum.
+![alt text](assets/image-22.png)
+
+Daha sonrasında ise values.yaml altında mariadb ayarlarını değiştirerek external secretten database şifresinin gelmesini sağladım.
+
+Güncellediğim values.yaml dosyasıyla şu komutla güncelledim birdaha wordpress deploymentimi.
+
+```bash
+helm install my-blog ./wordpress
+```
+
+Secrete baktığım zaman ise base 64 ile şifrelenmiş bir şekilde mariadb-password ve wordpress-passwordumu görmüş oldum 
+
+![alt text](assets/image-22.png)
+
+Wordpress uygulamamı ise şöyle çalıştırdım 
+
+```bash
+root@mert-k3slab-server:/home/vagrant/helm-practice# kubectl port-forward svc/my-blog-wordpress 8080:80 --address 0.0.0.0^
+```
+
+böyle yaparak kendi bilgisayarımda ulaşabildim wordpresse http ile ssl olmadan.
+
+![alt text](assets/image-23.png)
+
+
+## Worldpress'e DNS tanımlayın ve HTTPS  çalışmasını sağlayın.
+
+Öncelikli olarak şu kodu çalıştırarak kendi sertifikamı ürettim vagrant makinemin içerisinde vagrant makineme ssh yaparak.
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout tls.key \
+  -out tls.crt \
+  -subj "/CN=my-blog.local/O=MertLab"
+```
+
+![alt text](assets/image-24.png)
+
+bu sertifikayı ürettikten sonrasında helm içerisinde kalmayı seçtiğim için wordpress values.yaml ayarlarımı güncelledim tls kullanmak üzere secret üzerinden.
+
+![alt text](assets/image-25.png)
+
+daha sonrasında birdaha helm upgrade çalıştırdım 
+
+daha sonrasında kendi bilgisayarıma port-forward yaptığım için kendi bilgisayarımda hostu tanımlamam gerekti 
+
+![alt text](assets/image-26.png)
+
+daha sonrasında ise 
+
+```bash
+root@mert-k3slab-server:/home/vagrant/helm-practice/wordpress# kubectl port-forward svc/my-blog-wordpress 8080:80 --address 0.0.0.0
+```
+
+komudunu çalıştırdıktan sonra kendi bilgisayarımda gittiğim zaman adresi https şeklinde görmüş oldum 
+
+![alt text](assets/image-27.png)
