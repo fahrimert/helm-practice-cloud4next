@@ -1,0 +1,10 @@
+replicaCount: 1
+
+image:
+  repository: hello-app-service
+  pullPolicy: Never
+  tag: "v1"
+
+service:
+  type: ClusterIP
+  port: 5000

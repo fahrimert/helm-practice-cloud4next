@@ -1,0 +1,30 @@
+---
+- name: Python Uygulamasını Build Et
+  hosts: k3s_nodes
+  become: yes
+  tasks:
+    - name: Kaynak kod klasörünü hazırla
+      file:
+        path: /opt/hello-world-app
+        state: directory
+        mode: '0755'
+
+    - name: Python kodlarını kopyala
+      copy:
+        src: ../src/hello-world-app/
+        dest: /opt/hello-world-app/
+
+    - name: Docker Image Build 
+      shell: docker build -t hello-world-app:v1 .
+      args:
+        chdir: /opt/hello-world-app/
+
+    - name: İmajı tar dosyası olarak kaydet
+      shell: docker save hello-world-app:v1 -o hello-world-app.tar
+      args:
+        chdir: /opt/hello-world-app
+
+    - name: İmajı K3s  içine import et
+      shell: k3s ctr images import hello-world-app.tar
+      args:
+        chdir: /opt/hello-world-app

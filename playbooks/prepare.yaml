@@ -1,0 +1,57 @@
+- name: Sistem Hazırlığı 
+  hosts: k3s_nodes
+  become: yes
+  tasks:
+    - name: Internet bağlantısını test et (Google'a ping)
+      command: ping -c 1 google.com
+      register: ping_result
+      ignore_errors: yes
+
+    - name: Paket listesini güncelle
+      apt:
+        name:
+          - curl
+          - wget
+          - git
+          - htop
+          - docker.io
+          - apt-transport-https
+          - gpg
+        state: present
+        update_cache: yes
+    - name: Paket listesini güncelle ve gerekli araçları kur
+      apt:
+        name:
+          - curl
+          - wget
+          - git
+          - htop
+          - docker.io  
+        state: present
+        update_cache: yes
+
+    - name: Docker servisini başlat ve enable et
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Helm GPG anahtarını indir (Signing Key)
+      get_url:
+        url: https://baltocdn.com/helm/signing.asc
+        dest: /usr/share/keyrings/helm-signing.asc
+        mode: '0644'
+
+    - name: Helm APT repository'sini ekle
+      apt_repository:
+        repo: "deb [arch={{ ansible_architecture | replace('x86_64','amd64') }} signed-by=/usr/share/keyrings/helm-signing.asc] https://baltocdn.com/helm/stable/debian/ all main"
+        state: present
+        filename: helm-stable-debian
+
+    - name: Helm paketini kur
+      apt:
+        name: helm
+        state: present
+        update_cache: yes
+
+
