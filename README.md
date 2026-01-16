@@ -35,10 +35,6 @@ ansible-playbook -i inventory.ini playbooks/prepare.yaml
 ansible-playbook -i inventory.ini playbooks/install-k3s.yaml 
 ```
 
-# 3. Python Hello-world uygulamasını build et ve K3s containerd'ye import et
-```bash
-ansible-playbook -i inventory.ini playbooks/build-app.yaml
-```
 
 ![alt text](assets/image-16.png)
 
@@ -142,6 +138,10 @@ Daha sonrasında helm ile templatesini kurmadan öncesinde:
 ![alt text](assets/image-30.png)
 
 Yeni bir ansible dosyası kurmam gerekti. Bu sayede helm chart ile kullanabileceğim hello-app uygulamamın imagesini Vm`in içerisine koymuş oldum.
+
+```bash
+ansible-playbook -i inventory.ini playbooks/build-app.yaml
+```
 
 Daha sonrasında komudu ile templatemi oluşturdum.
 
