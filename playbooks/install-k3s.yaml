@@ -26,6 +26,6 @@
       replace:
         path: ../k3s.yaml
         regexp: '127.0.0.1'
-        replace: '192.168.56.10'
+        replace: '192.168.56.30'
 
 

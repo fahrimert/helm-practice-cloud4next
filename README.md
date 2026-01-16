@@ -1,25 +1,55 @@
 # Helm Pratiği ve Öğrenimi Projesi
 
+Projeyi çalıştırmadan önce bilgisayarınızda aşağıdaki araçların kurulu olması gerekmektedir:
+
+Proje; **Vagrant** üzerinde sanallaştırılan, **Ansible** ile configure edilen ve **K3s** üzerinde çalışan bir yapıyı kapsar.Helm öğrenimi ve pratikleri amacıyla bu proje yapılmıştır.
+
+##  Ön Gereksinimler (Prerequisites)
+Projeyi çalıştırmadan önce bilgisayarınızda aşağıdaki araçların kurulu olması gerekmektedir:
+
+* [Vagrant](https://www.vagrantup.com/)
+* [VirtualBox](https://www.virtualbox.org/)
+* [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
+
+## Kurulum Adımları (Installation)
+
+### 1. Sanal Makineyi Başlatma
+Vagrant ortamını ayağa kaldırın. Bu işlem `192.168.56.30` IP adresinde bir Ubuntu sanal makinesi oluşturacaktır.
+
+```bash
+vagrant up
+```
+
+##  Altyapı ve K3s Kurulumu (Ansible)
+
+Aşağıdaki Ansible playbook’larını **sırasıyla** çalıştırarak sunucuyu hazırlayın, K3s’i kurun ve hello-world uygulamasının imajını build edin.
+
+# 1. İşletim sistemi hazırlığı 
+```bash
+ansible-playbook -i inventory.ini playbooks/prepare.yaml
+```
+
+# 2. K3s Kurulumu ve config ayarları 
+```bash
+ansible-playbook -i inventory.ini playbooks/install-k3s.yaml 
+```
+
+# 3. Python Hello-world uygulamasını build et ve K3s containerd'ye import et
+```bash
+ansible-playbook -i inventory.ini playbooks/build-app.yaml
+```
+
 ![alt text](assets/image-16.png)
 
 Bu projede Helm pratiği yapmak amacıyla **NGINX** chart’ı seçilmiştir (nginx / redis seçenekleri arasından nginx tercih edilmiştir).
 
-## Ortam Kurulumu
-Vagrant kullanılarak bir sanal makine oluşturulmuş, ardından Ansible ile bu sanal makine üzerine aşağıdaki bileşenler kurulmuştur:
-
-- k3s
-- Helm
-- Gerekli sistem paketleri
-
-Kurulum tamamlandıktan sonra sanal makineye SSH ile bağlantı sağlanmıştır.
 
 ## Helm Repository Ekleme
-Bitnami Helm repository’si Helm’e eklenmiştir:
+Makineye SSH ile bağlantı sağlanmıştır , Bitnami Helm repository’si Helm’e eklenmiştir:
 
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
-
-
 ```
 ## Chart İndirme ve Hazırlık
 NGINX chart’ı, values.yaml dosyası üzerinde değişiklik yapılabilmesi ve chart yapısının incelenebilmesi amacıyla lokal ortama indirilmiş ve extract edilmiştir:
@@ -27,6 +57,12 @@ NGINX chart’ı, values.yaml dosyası üzerinde değişiklik yapılabilmesi ve 
 ```bash
 helm pull bitnami/nginx --untar
 ```
+## Kubeconfig ayarlanması 
+Helmin uygulanması için kubeconfig ayarının varsayılan olarak localhost:8080 adresi değil /etc/rancher/k3s/k3s.yaml konumuna bakmasını söylüyoruz
+```bash
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+```
+
 ## Uygulamanın Yüklenmesi
 
 İndirilen yerel klasör (./nginx) kaynak gösterilerek kurulum yapılmıştır. Bu aşamada varsayılan ayarlar kullanılmıştır:
@@ -36,6 +72,8 @@ helm install my-nginx ./nginx --namespace default
 ```
 
 ## Doğrulama
+Nginx podlarını doğruluyoru:
+![alt text](assets/image-32.png)
 
 Kurulumun durumu helm list komutu ile kontrol edilmiştir:
 

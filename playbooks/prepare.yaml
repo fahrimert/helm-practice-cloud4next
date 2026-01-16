@@ -2,6 +2,13 @@
   hosts: k3s_nodes
   become: yes
   tasks:
+    - name: DNS ayarlarını 8.8.8.8 olarak sabitle
+      shell: |
+        rm -f /etc/resolv.conf
+        echo "nameserver 8.8.8.8" > /etc/resolv.conf
+        echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+      tags: dns_fix
+
     - name: Internet bağlantısını test et (Google'a ping)
       command: ping -c 1 google.com
       register: ping_result
@@ -36,22 +43,22 @@
         state: started
         enabled: yes
 
-    - name: Helm GPG anahtarını indir (Signing Key)
-      get_url:
-        url: https://baltocdn.com/helm/signing.asc
-        dest: /usr/share/keyrings/helm-signing.asc
-        mode: '0644'
+    - name: Helm kurulum scriptini indir ve çalıştır
+      shell: |
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+      args:
+        creates: /usr/local/bin/helm
+      environment:
+        PATH: "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
 
-    - name: Helm APT repository'sini ekle
-      apt_repository:
-        repo: "deb [arch={{ ansible_architecture | replace('x86_64','amd64') }} signed-by=/usr/share/keyrings/helm-signing.asc] https://baltocdn.com/helm/stable/debian/ all main"
-        state: present
-        filename: helm-stable-debian
+    - name: Helm kurulumunu doğrula
+      command: helm version
+      register: helm_version_output
+      changed_when: false
 
-    - name: Helm paketini kur
-      apt:
-        name: helm
-        state: present
-        update_cache: yes
-
+    - name: Helm versiyonunu ekrana yaz
+      debug:
+        msg: "Helm Başarıyla Kuruldu: {{ helm_version_output.stdout }}"
 
