@@ -9,11 +9,6 @@
         echo "nameserver 1.1.1.1" >> /etc/resolv.conf
       tags: dns_fix
 
-    - name: Internet bağlantısını test et (Google'a ping)
-      command: ping -c 1 google.com
-      register: ping_result
-      ignore_errors: yes
-
     - name: Paket listesini güncelle
       apt:
         name:
@@ -24,16 +19,6 @@
           - docker.io
           - apt-transport-https
           - gpg
-        state: present
-        update_cache: yes
-    - name: Paket listesini güncelle ve gerekli araçları kur
-      apt:
-        name:
-          - curl
-          - wget
-          - git
-          - htop
-          - docker.io  
         state: present
         update_cache: yes
 
