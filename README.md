@@ -269,3 +269,5 @@ root@mert-k3slab-server:/home/vagrant/helm-practice/wordpress# kubectl port-forw
 komudunu çalıştırdıktan sonra kendi bilgisayarımda gittiğim zaman adresi https şeklinde görmüş oldum 
 
 ![alt text](assets/image-27.png)
+
+![alt text](image.png)
