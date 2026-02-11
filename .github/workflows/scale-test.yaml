@@ -3,7 +3,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   test-job-1:
-    runs-on: k3s-runner-set
+    runs-on: helm-practice-cicd
     steps:
       - name: Kimim ben?
         run: |
@@ -13,7 +13,7 @@ jobs:
         run: sleep 30
 
   test-job-2:
-    runs-on: k3s-runner-set
+    runs-on: helm-practice-cicd
     needs: test-job-1
     steps:
       - name: İkinci İş
