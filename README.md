@@ -233,15 +233,28 @@ böyle yaparak kendi bilgisayarımda ulaşabildim wordpresse http ile ssl olmada
 
 ## Worldpress'e DNS tanımlayın ve HTTPS  çalışmasını sağlayın.
 
-Öncelikli olarak şu kodu çalıştırarak kendi sertifikamı ürettim vagrant makinemin içerisinde vagrant makineme ssh yaparak.
+Bu projede güvenli bağlantı (HTTPS) sağlamak için manuel sertifika üretimi yerine, Kubernetes dünyasının standardı olan cert-manager kullanılmıştır. Bu sayede sertifikalar kod deposunda  saklanmaz, küme içerisinde otomatik olarak üretilir ve yönetilir
+# 1.  cert-manager Kurulumu
+
+Sertifika yöneticisini (Certificate Manager) kümeye dahil etmek için aşağıdaki komutlar çalıştırılır:
 
 ```bash
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout tls.key \
-  -out tls.crt \
-  -subj "/CN=my-blog.local/O=MertLab"
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --set installCRDs=true
 ```
-bu sertifikayı ürettikten sonrasında helm içerisinde kalmayı seçtiğim için wordpress values.yaml ayarlarımı güncelledim tls kullanmak üzere secret üzerinden.daha sonrasında birdaha helm upgrade çalıştırdım 
+# 2. Self-Signed Issuer Tanımlama
+Sertifikaları imzalayacak olan yerel otoriteyi (Issuer) oluşturmak için ClusterIssuer tanımı uyguladım.
+
+# 3. WordPress Ingress Ayarları
+
+values.yaml dosyasında Ingress yapılandırması, cert-manager'ı tetikleyecek şekilde ayarlanmıştır. Gizli anahtarlar (Private Keys) dosyada bulunmaz.
+
+![alt text](assets/image-33.png)
 
 daha sonrasında kendi bilgisayarıma port-forward yaptığım için kendi bilgisayarımda hostu tanımlamam gerekti 
 

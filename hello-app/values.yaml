@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: hello-app-service
+  repository: hello-world-app
   pullPolicy: Never
   tag: "v1"
 

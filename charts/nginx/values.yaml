@@ -352,11 +352,11 @@ resourcesPreset: "none"
 ## Example:
 resources:
   requests:
-    cpu: 1
-    memory: 2048Mi
+    cpu: 200m
+    memory: 256Mi
   limits:
-    cpu: 3
-    memory: 2048Mi
+    cpu: 200m
+    memory: 256Mi
 ##
 ## @param fips.openssl Configure OpenSSL FIPS mode: '', 'restricted', 'relaxed', 'off'. If empty (""), 'global.defaultFips' would be used
 ##

@@ -691,7 +691,10 @@ ingress:
   ingressClassName: ""
   hostname: my-blog.local
   path: /
-  annotations: {}
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: "selfsigned-cluster-issuer"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
   tls: true
   tlsWwwPrefix: false
   selfSigned: false
@@ -700,17 +703,7 @@ ingress:
   extraTls:
     - hosts:
         - my-blog.local
-      secretName: my-blog-tls  
-  secrets:
-    - name: my-blog-tls
-      key: |-
-        -----BEGIN PRIVATE KEY-----
-        ----------------------------
-        -----END PRIVATE KEY-----
-      certificate: |-
-        -----BEGIN CERTIFICATE-----
-        -------
-        -----END CERTIFICATE-----
+      secretName: my-blog-tls-cert
 
   ## @param ingress.extraRules Additional rules to be covered with this ingress record
   ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-rules
