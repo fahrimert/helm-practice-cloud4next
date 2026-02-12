@@ -29,17 +29,14 @@ jobs:
       - name: Docker Login (Harbor - NodePort)
         run: |
           echo "${{ secrets.HARBOR_PASSWORD }}" \
-            | docker login "${{ env.REGISTRY }}" -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+            | docker login 10.0.2.15:30002 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
       - name: Build & Push Docker Image
         run: |
           set -euo pipefail
 
-          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}"
+          IMAGE_TAG="10.0.2.15:30002/helm-practice-cicdk3slab/hello-app:${{ env.SHORT_SHA }}"
           echo "IMAGE_TAG=$IMAGE_TAG"
-
-          # (İsteğe bağlı) BuildKit kapat
-          export DOCKER_BUILDKIT=0
 
           cd src/hello-world-app
           docker build -t "$IMAGE_TAG" .
