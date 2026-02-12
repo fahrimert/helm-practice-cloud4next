@@ -1,8 +1,0 @@
-githubConfigUrl: "https://github.com/fahrimert/helm-practice-cloud4next" 
-
-githubConfigSecret: pre-defined-secret
-
-minRunners: 0
-maxRunners: 3
-
-runnerScaleSetName: "helm-practice-cicd"

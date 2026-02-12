@@ -270,4 +270,40 @@ komudunu çalıştırdıktan sonra kendi bilgisayarımda gittiğim zaman adresi 
 
 ![alt text](assets/image-27.png)
 
-![alt text](image.png)
+## Helm Pratiği CI/CD Bölümü
+Cı/cd bölümüne ilk aşama olarak Github Actions ile helm ile kurduğumuz autoscale olabilen ve aynı anda 2 deployment yapabilen local runnerlarımız ile başlıyoruz.
+
+## Actions Runner Controller
+Auto-scalable olabilmesi için Actions Runner Controller kullanıyoruz bu araç sayesinde gitHundan iş geldikçe otomatik olarak yeni Pod'lar oluşturup, iş bitince de onları silmiş oluyoruz.
+
+
+```bash
+helm repo add actions-runner-controller https://actions-runner-controller.github.io/actions-runner-controller
+```
+
+Controller kurulumumuzu yapıyoruz 
+```bash
+helm install arc ./charts/gha-runner-scale-set-controller \
+    --namespace arc-systems \
+    --create-namespace
+```
+
+Runnera secretimizi ve Autoscale ayarı için ayarlamaları yapıp, daha sonrasında runner setimizi kuruyoruz.
+
+```bash
+helm install arc-runner-set ./charts/gha-runner-scale-set \
+    --namespace arc-systems
+```
+Podlarımız şuan hazır namespacemizde
+
+![alt text](assets/image-34.png)
+
+Daha sonrasında ise adım adım görüldüğü üzere rastgele bir test etmek için pipelineda auto-scalable runnerlarımı oluşmuş durumda.
+
+![alt text](assets/image-35.png)
+
+![alt text](assets/image-36.png)
+
+![alt text](assets/image-37.png)
+
+
