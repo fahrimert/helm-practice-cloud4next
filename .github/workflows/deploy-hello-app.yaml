@@ -29,14 +29,20 @@ jobs:
 
       - name: Build & Push Docker Image
         env:
-          DOCKER_BUILDKIT: 0
           IMAGE_TAG: harbor.local/helm-practice-cicdk3slab/hello-app:${{ env.SHORT_SHA }}
         run: |
+          # 1. BUILDKIT'İ ZORLA KAPAT (String olarak veriyoruz)
+          export DOCKER_BUILDKIT=0
+          
+          # 2. İşlemleri başlat
           cd src/hello-world-app
+          
+          # Build komutu (Artık loglar 'Step 1/5' şeklinde akacak)
           docker build -t $IMAGE_TAG .
+          
+          # Push komutu
           docker push $IMAGE_TAG
           echo "Image pushed: $IMAGE_TAG"
-
       - name: Helm Chart Versiyonunu Güncelle (GitOps)
         run: |
           sed -i 's/tag: .*/tag: "${{ env.SHORT_SHA }}"/' hello-app/values.yaml
