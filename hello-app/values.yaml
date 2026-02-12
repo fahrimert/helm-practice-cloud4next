@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: hello-world-app
   pullPolicy: Never
-  tag: "v1"
+  tag: "807886b"
 
 service:
   type: ClusterIP
