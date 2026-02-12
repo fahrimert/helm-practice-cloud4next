@@ -26,6 +26,7 @@ jobs:
         run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
 
+
       - name: Docker Login (Harbor - NodePort)
         run: |
           echo "${{ secrets.HARBOR_PASSWORD }}" \
