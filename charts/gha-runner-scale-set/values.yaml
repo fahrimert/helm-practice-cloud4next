@@ -37,7 +37,7 @@ github_token: ""
 #     - example.org
 
 
-minRunners: 0
+minRunners: 2
 maxRunners: 3
 # runnerGroup: "default"
 
@@ -103,55 +103,68 @@ runnerScaleSetName: "helm-practice-cicd"
 
 ## template is the PodSpec for each runner Pod
 ## For reference: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec
+# charts/gha-runner-scale-set/values.yaml
+
+minRunners: 1
+maxRunners: 5
+
+# charts/gha-runner-scale-set/values.yaml
+
+
+
 template:
-  ## template.spec will be modified if you change the container mode
-  ## with containerMode.type=dind, we will populate the template.spec with following pod spec
-  ## template:
-  ##   spec:
-  ##     initContainers:
-  ##     - name: init-dind-externals
-  ##       image: ghcr.io/actions/actions-runner:latest
-  ##       command: ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
-  ##       volumeMounts:
-  ##         - name: dind-externals
-  ##           mountPath: /home/runner/tmpDir
-  ##     containers:
-  ##     - name: runner
-  ##       image: ghcr.io/actions/actions-runner:latest
-  ##       command: ["/home/runner/run.sh"]
-  ##       env:
-  ##         - name: DOCKER_HOST
-  ##           value: unix:///var/run/docker.sock
-  ##       volumeMounts:
-  ##         - name: work
-  ##           mountPath: /home/runner/_work
-  ##         - name: dind-sock
-  ##           mountPath: /var/run
-  ##     - name: dind
-  ##       image: docker:dind
-  ##       args:
-  ##         - dockerd
-  ##         - --host=unix:///var/run/docker.sock
-  ##         - --group=$(DOCKER_GROUP_GID)
-  ##       env:
-  ##         - name: DOCKER_GROUP_GID
-  ##           value: "123"
-  ##       securityContext:
-  ##         privileged: true
-  ##       volumeMounts:
-  ##         - name: work
-  ##           mountPath: /home/runner/_work
-  ##         - name: dind-sock
-  ##           mountPath: /var/run
-  ##         - name: dind-externals
-  ##           mountPath: /home/runner/externals
-  ##     volumes:
-  ##     - name: work
-  ##       emptyDir: {}
-  ##     - name: dind-sock
-  ##       emptyDir: {}
-  ##     - name: dind-externals
-  ##       emptyDir: {}
+  spec:
+    hostAliases:
+      - ip: "192.168.56.30"
+        hostnames:
+          - "harbor.local"
+    containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner:latest
+        command: ["/home/runner/run.sh"]
+        env:
+          - name: DOCKER_HOST
+            value: tcp://localhost:2375
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: harbor-cert-volume
+            mountPath: /etc/docker/certs.d/harbor.local
+            readOnly: true
+      - name: dind
+        image: docker:dind
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            # Sertifikayı OS deposuna ekle
+            mkdir -p /usr/local/share/ca-certificates/extra
+            cp /etc/docker/certs.d/harbor.local/ca.crt /usr/local/share/ca-certificates/extra/harbor.crt
+            update-ca-certificates
+            
+            # Docker'ı başlat
+            dockerd --host=tcp://0.0.0.0:2375 --group=0
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-config-volume
+            mountPath: /etc/docker/daemon.json
+            subPath: daemon.json
+            readOnly: true
+          - name: harbor-cert-volume
+            mountPath: /etc/docker/certs.d/harbor.local
+            readOnly: true
+            
+    volumes:
+      - name: work
+        emptyDir: {}
+      - name: dind-config-volume
+        configMap:
+          name: dind-daemon-config
+      - name: harbor-cert-volume
+        secret:
+          secretName: harbor-cert
   ######################################################################################################
   ## with containerMode.type=kubernetes, we will populate the template.spec with following pod spec
   ## template:
@@ -182,11 +195,7 @@ template:
   ##               resources:
   ##                 requests:
   ##                   storage: 1Gi
-  spec:
-    containers:
-      - name: runner
-        image: ghcr.io/actions/actions-runner:latest
-        command: ["/home/runner/run.sh"]
+
 
 ## Optional controller service account that needs to have required Role and RoleBinding
 ## to operate this gha-runner-scale-set installation.

@@ -29,6 +29,7 @@ jobs:
 
       - name: Build & Push Docker Image
         env:
+          DOCKER_BUILDKIT: 0
           IMAGE_TAG: harbor.local/helm-practice-cicdk3slab/hello-app:${{ env.SHORT_SHA }}
         run: |
           cd src/hello-world-app
