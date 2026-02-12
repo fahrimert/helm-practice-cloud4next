@@ -118,6 +118,7 @@ template:
       - ip: "192.168.56.30"
         hostnames:
           - "harbor.local"
+
     containers:
       - name: runner
         image: ghcr.io/actions/actions-runner:latest
@@ -128,23 +129,19 @@ template:
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
-          - name: harbor-cert-volume
-            mountPath: /etc/docker/certs.d/harbor.local
-            readOnly: true
+
       - name: dind
         image: docker:dind
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            # Sertifikayı OS deposuna ekle
-            mkdir -p /usr/local/share/ca-certificates/extra
-            cp /etc/docker/certs.d/harbor.local/ca.crt /usr/local/share/ca-certificates/extra/harbor.crt
-            update-ca-certificates
-            
-            # Docker'ı başlat
-            dockerd --host=tcp://0.0.0.0:2375 --group=0
         securityContext:
           privileged: true
+        command: ["/bin/sh", "-lc"]
+        args:
+          - |
+            echo "=== /etc/docker/daemon.json ==="
+            ls -l /etc/docker/daemon.json || true
+            cat /etc/docker/daemon.json || true
+            echo "==============================="
+            exec dockerd --config-file=/etc/docker/daemon.json --host=tcp://0.0.0.0:2375 --group=0
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
@@ -152,19 +149,14 @@ template:
             mountPath: /etc/docker/daemon.json
             subPath: daemon.json
             readOnly: true
-          - name: harbor-cert-volume
-            mountPath: /etc/docker/certs.d/harbor.local
-            readOnly: true
-            
+
     volumes:
       - name: work
         emptyDir: {}
       - name: dind-config-volume
         configMap:
           name: dind-daemon-config
-      - name: harbor-cert-volume
-        secret:
-          secretName: harbor-cert
+
   ######################################################################################################
   ## with containerMode.type=kubernetes, we will populate the template.spec with following pod spec
   ## template:
