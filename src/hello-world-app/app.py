@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 @app.route("/")
 def hello():
     logger.info("Hello isteği başarıyla karşılandı.")
-    return "Hello World! Pipeline Test Ediliyor - V1"
+    return "Hello World! Pipeline Test Ediliyor - V2"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
