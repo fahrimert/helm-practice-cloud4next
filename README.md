@@ -307,3 +307,11 @@ Daha sonrasında ise adım adım görüldüğü üzere rastgele bir test etmek i
 ![alt text](assets/image-37.png)
 
 
+
+
+Argocd ile alakalı şimdilik kalsın fotolar
+![alt text](image.png)
+
+![alt text](image-1.png)
+
+![alt text](image-2.png)

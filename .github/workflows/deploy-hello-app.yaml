@@ -1,0 +1,51 @@
+name: Build and Deploy Hello App
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/hello-world-app/**'
+      - 'hello-app/**'
+jobs:
+  build-push-deploy:
+    runs-on: helm-practice-cicd
+    permissions:
+      contents: write
+
+    steps:
+      - name: Kodu Çek (Checkout)
+        uses: actions/checkout@v3
+
+      - name: Kısa SHA Oluştur (Versiyonlama için)
+        id: vars
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Host Dosyasını Ayarla (Harbor Erişimi İçin)
+        run: |
+          echo "192.168.56.30 harbor.local" | sudo tee -a /etc/hosts
+
+      - name: Docker Login (Harbor)
+        run: |
+          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.local -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
+      - name: Build & Push Docker Image
+        env:
+          IMAGE_TAG: harbor.local/helm-practice-cicdk3slab/hello-app:${{ env.SHORT_SHA }}
+        run: |
+          cd src/hello-world-app
+          docker build -t $IMAGE_TAG .
+          docker push $IMAGE_TAG
+          echo "Image pushed: $IMAGE_TAG"
+
+      - name: Helm Chart Versiyonunu Güncelle (GitOps)
+        run: |
+          sed -i 's/tag: .*/tag: "${{ env.SHORT_SHA }}"/' hello-app/values.yaml
+          
+          cat hello-app/values.yaml | grep tag
+
+      - name: Değişikliği GitHub'a Geri Yolla
+        run: |
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "action@github.com"
+          git add hello-app/values.yaml
+          git commit -m "ci: update hello-app image tag to ${{ env.SHORT_SHA }}"
+          git push
