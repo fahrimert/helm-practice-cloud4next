@@ -1,0 +1,18 @@
+server:
+  extraArgs:
+    - --insecure
+  
+  service:
+    type: NodePort
+    nodePortHttps: 30081
+  
+  ingress:
+    enabled: false 
+redis-ha:
+  enabled: false
+controller:
+  replicas: 1
+repoServer:
+  replicas: 1
+applicationSet:
+  replicas: 1
