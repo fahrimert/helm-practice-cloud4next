@@ -1,0 +1,23 @@
+externalURL: https://harbor.local
+
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    certSource: secret
+    secret:
+      secretName: harbor-ingress-tls
+  ingress:
+    hosts:
+      core: harbor.local
+    controller: default
+    annotations:
+      kubernetes.io/ingress.class: traefik
+      cert-manager.io/cluster-issuer: "selfsigned-cluster-issuer"
+
+harborAdminPassword: "Harbor12345"
+
+notary:
+  enabled: false
+trivy:
+  enabled: false
