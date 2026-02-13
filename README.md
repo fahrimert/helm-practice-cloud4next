@@ -374,6 +374,8 @@ Burada yazan değeri v3 den v4 e değiştiriyorum.
 Daha sonrasında pipelinem harbora pushlamak üzere çalışıyor yeni versiyon tagı ile , pipelinem bittiği zaman harbora bakıyorum. Saat 3:13 itibariyle yeni imagem oluşmuş durumda.
 ![alt text](assets/image-45.png)
 
+![alt text](assets/image-46.png)
+
 ![alt text](assets/image-43.png)
 
 ArgoCD ye gelip sync yapıyorum yeni imagem ile yeni podlarımın oluşması için , yeni podlarım oluştuktan sonrasında ise curl atarak yeni versiyona geçtiğimi doğruluyorum ve CI/CD pipelinemiz başarıyla çalışmış oluyor Harbor image registrysi ile beraber.

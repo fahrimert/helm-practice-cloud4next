@@ -141,14 +141,21 @@ template:
             ls -l /etc/docker/daemon.json || true
             cat /etc/docker/daemon.json || true
             echo "==============================="
-            exec dockerd --config-file=/etc/docker/daemon.json --host=tcp://0.0.0.0:2375 --group=0 - --insecure-registry=10.0.2.15:30002
+            exec dockerd --config-file=/etc/docker/daemon.json --host=tcp://0.0.0.0:2375 --group=0
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
+          - name: dind-config-volume
+            mountPath: /etc/docker/daemon.json
+            subPath: daemon.json
+            readOnly: true
 
     volumes:
       - name: work
         emptyDir: {}
+      - name: dind-config-volume
+        configMap:
+          name: dind-daemon-config
 
   ######################################################################################################
   ## with containerMode.type=kubernetes, we will populate the template.spec with following pod spec
