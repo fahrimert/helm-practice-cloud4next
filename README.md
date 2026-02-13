@@ -326,7 +326,7 @@ KUBECONFIG=./k3s.yaml kubectl port-forward svc/harbor -n harbor-system 8082:443
 
 Daha sonrasında ise bu son hali  harboru image repomuzu görmüş oluyoruz.
 
-![alt text](image-3.png)
+![alt text](assets/image-41.png)
 
 ## ArgoCD Kurulum
 
@@ -355,13 +355,13 @@ KUBECONFIG=./k3s.yaml kubectl -n argocd port-forward --address 0.0.0.0 svc/argoc
 ```
 Ui kısmında ilk öncelikle argocd yi repomuza bağladık daha sonrasnda ise clusterimizla sync haline geldi
 
-![alt text](image.png)
+![alt text](assets/image-38.png)
 
-![alt text](image-1.png)
+![alt text](assets/image-39.png)
 
-![alt text](image-2.png)
+![alt text](assets/image-40.png)
 
-## Pipeline Ve CD Kısımı
+## Pipeline Ve CD Kısmı
 
 Bu kısımda pipelinem genel olarak oluşturduğum hello-world-app uygulamasındaki src/ dizinini izleyerek oradaki kod her değiştiğinde runnerimi çalıştırıyor daha sonrasında runnerim oluşturduğu image üzerinde versiyon değiştirerek harbora atıyor , hello-world appimin chartı da harbor-cred adlı secretimden bilgileri alıp pullPolicy:Always sayesinde izlediği harbor repositorysinden çekiyor. ArgoCD sync yaptığımda ise podlarım yeni image ile ayağa kalkıyor.
 
@@ -369,4 +369,16 @@ Bu kısımda pipelinem genel olarak oluşturduğum hello-world-app uygulamasınd
 
 Burada yazan değeri v3 den v4 e değiştiriyorum.
 
-![alt text](image-4.png)
+![alt text](assets/image-42.png)
+
+Daha sonrasında pipelinem harbora pushlamak üzere çalışıyor yeni versiyon tagı ile , pipelinem bittiği zaman harbora bakıyorum. Saat 3:13 itibariyle yeni imagem oluşmuş durumda.
+![alt text](assets/image-45.png)
+
+![alt text](assets/image-43.png)
+
+ArgoCD ye gelip sync yapıyorum yeni imagem ile yeni podlarımın oluşması için , yeni podlarım oluştuktan sonrasında ise curl atarak yeni versiyona geçtiğimi doğruluyorum ve CI/CD pipelinemiz başarıyla çalışmış oluyor Harbor image registrysi ile beraber.
+
+![alt text](assets/image-44.png)
+
+
+![alt text](assets/image-46.png)
