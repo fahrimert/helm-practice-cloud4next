@@ -49,8 +49,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          # hello-app/values.yaml içinde "tag:" satırını güncelle
-          # tag: "xxx" veya tag: xxx fark etmez
           sed -i -E 's/^([[:space:]]*tag:[[:space:]]*).*/\1"'${{ env.SHORT_SHA }}'"/' hello-app/values.yaml
 
           echo "Updated values.yaml:"
