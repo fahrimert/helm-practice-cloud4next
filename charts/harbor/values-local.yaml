@@ -19,3 +19,7 @@ notary:
 
 trivy:
   enabled: false
+
+gc:
+  enabled: true
+  schedule: "0 2 * * *"

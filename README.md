@@ -306,12 +306,67 @@ Daha sonrasında ise adım adım görüldüğü üzere rastgele bir test etmek i
 
 ![alt text](assets/image-37.png)
 
+## Harbor Kurulumu 
+Öncelik olarak helm chartımızı local repomuza pulluyoruz ve kendi oluşturduğumuz valuelerle override ediyoruz harboru.
 
+```bash
+helm pull harbor/harbor --untar
+```
 
+Daha sonrasında ise helm install ile harborumuzu kuruyoruz 
+```bash
+helm install harbor ./charts/harbor \
+  --namespace harbor-system \
+  -f ./charts/harbor/values-local.yaml
+```
 
-Argocd ile alakalı şimdilik kalsın fotolar
+```bash
+KUBECONFIG=./k3s.yaml kubectl port-forward svc/harbor -n harbor-system 8082:443
+```
+
+Daha sonrasında ise bu son hali  harboru image repomuzu görmüş oluyoruz.
+
+![alt text](image-3.png)
+
+## ArgoCD Kurulum
+
+Argo Cd chartımızı repomuza pull ediyoruz.
+
+```bash
+helm pull argo/argo-cd --untar 
+```
+
+Daha sonrasında ise kendi value-local.yaml dosyamız ile helm install yapıyoruz.
+```bash
+helm install argocd ./charts/argo-cd \
+  --namespace argocd \
+  --create-namespace \
+  -f ./charts/argo-cd/values-local.yaml
+```
+Şifremizi decode ediyoruz ui da erişebilmek için
+
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+Port Forward Yaptıktan sonra ui kısmımız görünüyor  
+
+```bash
+KUBECONFIG=./k3s.yaml kubectl -n argocd port-forward --address 0.0.0.0 svc/argocd-server 8082:80
+```
+Ui kısmında ilk öncelikle argocd yi repomuza bağladık daha sonrasnda ise clusterimizla sync haline geldi
+
 ![alt text](image.png)
 
 ![alt text](image-1.png)
 
 ![alt text](image-2.png)
+
+## Pipeline Ve CD Kısımı
+
+Bu kısımda pipelinem genel olarak oluşturduğum hello-world-app uygulamasındaki src/ dizinini izleyerek oradaki kod her değiştiğinde runnerimi çalıştırıyor daha sonrasında runnerim oluşturduğu image üzerinde versiyon değiştirerek harbora atıyor , hello-world appimin chartı da harbor-cred adlı secretimden bilgileri alıp pullPolicy:Always sayesinde izlediği harbor repositorysinden çekiyor. ArgoCD sync yaptığımda ise podlarım yeni image ile ayağa kalkıyor.
+
+## Örnek akış 
+
+Burada yazan değeri v3 den v4 e değiştiriyorum.
+
+![alt text](image-4.png)

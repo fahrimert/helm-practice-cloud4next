@@ -45,7 +45,7 @@ jobs:
 
           echo "Image pushed: $IMAGE_TAG"
 
-      - name: Helm values tag güncelle (GitOps)
+      - name: Helm values tag güncelle
         run: |
           set -euo pipefail
 
@@ -63,7 +63,6 @@ jobs:
 
           git add hello-app/values.yaml
 
-          # Değişiklik yoksa commit atma
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
