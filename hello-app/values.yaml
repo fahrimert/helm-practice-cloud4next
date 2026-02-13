@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: hello-world-app
-  pullPolicy: Never
-  tag: "b4cd70d"
+  repository: 10.0.2.15:30002/helm-practice-cicdk3slab/hello-app
+  pullPolicy: Always
+  tag: "testsetup"
 
 service:
   type: ClusterIP
