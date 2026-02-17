@@ -271,24 +271,35 @@ komudunu çalıştırdıktan sonra kendi bilgisayarımda gittiğim zaman adresi 
 ![alt text](assets/image-27.png)
 
 ## Helm Pratiği CI/CD Bölümü
-Cı/cd bölümüne ilk aşama olarak Github Actions ile helm ile kurduğumuz autoscale olabilen ve aynı anda 2 deployment yapabilen local runnerlarımız ile başlıyoruz.
 
-## Actions Runner Controller
-Auto-scalable olabilmesi için Actions Runner Controller kullanıyoruz bu araç sayesinde gitHundan iş geldikçe otomatik olarak yeni Pod'lar oluşturup, iş bitince de onları silmiş oluyoruz.
+Projenin CI/CD süreçlerinin sağlıklı çalışabilmesi için K3s Cluster'ı ve GitHub Runner'ların, Private Harbor Registry ile güvenli bir şekilde iletişim kurması gerekir.
 
+# Auto-Scale olabilen GitHub Actions Runnerları
+
+Kubernetes üzerinde çalışan  Auto-Scalable runner'lar kurgulanmıştır.
+
+Bunun için **Actions Runner Controller** kullanılmıştır.
+
+1. **Actions Runner Controller :** GitHub Actions için Kubernetes operatörüdür. Kubernetes cluster'ı içinde çalışır ve GitHub ile konuşarak iş yükünü yönetir.
+
+2. **gha-runner-scale-set-controller:** ARC'nin beynidir. GitHub API'leri ile sürekli iletişim halindedir. Bir `workflow_job` kuyruğa düştüğünde bunu algılar ve Kubernetes'e "Bana acil yeni bir Pod oluştur!" emrini verir.
+
+## Çalışma Mantığı
+
+* **Tetiklenme:** GitHub'a bir kod pushlandığında veya PR açıldığında bir Workflow tetiklenir.
+* **Algılama:** Cluster'da çalışan `gha-runner-scale-set-controller`, bu iş isteğini yakalar.
+* **Ölçeklenme :** Controller, `RunnerScaleSet` tanımına bakarak dinamik olarak yeni bir Runner Pod'u oluşturur.
+* **Çalıştırma:** Pod ayağa kalkar, kodu çeker , testleri/buildleri  yapar.
+* **Temizlik :** İş bittiğinde o Pod tamamen silinir. Bir sonraki iş için yepyeni, temiz bir Pod oluşturulur.
 
 ```bash
 helm repo add actions-runner-controller https://actions-runner-controller.github.io/actions-runner-controller
 ```
 
-Controller kurulumumuzu yapıyoruz 
 ```bash
 helm install arc ./charts/gha-runner-scale-set-controller \
-    --namespace arc-systems \
-    --create-namespace
+    --namespace arc-systems 
 ```
-
-Runnera secretimizi ve Autoscale ayarı için ayarlamaları yapıp, daha sonrasında runner setimizi kuruyoruz.
 
 ```bash
 helm install arc-runner-set ./charts/gha-runner-scale-set \
@@ -298,22 +309,19 @@ Podlarımız şuan hazır namespacemizde
 
 ![alt text](assets/image-34.png)
 
-Daha sonrasında ise adım adım görüldüğü üzere rastgele bir test etmek için pipelineda auto-scalable runnerlarımı oluşmuş durumda.
+# Harbor Kurulumu
 
-![alt text](assets/image-35.png)
+## Kısaca Harbor Nedir ?
+Basitçe; Docker Hub'ın kendi sunucumuzda çalışan, tamamen bize ait, güvenli ve çok daha yetenekli versiyonudur. İmajları tarayabilir , imzalayabilir ve erişim kontrolü sağlar.
 
-![alt text](assets/image-36.png)
-
-![alt text](assets/image-37.png)
-
-## Harbor Kurulumu 
-Öncelik olarak helm chartımızı local repomuza pulluyoruz ve kendi oluşturduğumuz valuelerle override ediyoruz harboru.
+## CI/CD Akışındaki Şu ana kadarki Yeri
+* **GitHub Runner:** Kodu derler, Docker imajını oluşturur ve Harbor'a push'lar.
+* **Harbor:** İmajı depolar ve versiyonlar (tagging).
 
 ```bash
 helm pull harbor/harbor --untar
 ```
 
-Daha sonrasında ise helm install ile harborumuzu kuruyoruz 
 ```bash
 helm install harbor ./charts/harbor \
   --namespace harbor-system \
@@ -324,36 +332,34 @@ helm install harbor ./charts/harbor \
 KUBECONFIG=./k3s.yaml kubectl port-forward svc/harbor -n harbor-system 8082:443
 ```
 
-Daha sonrasında ise bu son hali  harboru image repomuzu görmüş oluyoruz.
+## Harbor Proje Bitimindeki Hali
 
 ![alt text](assets/image-41.png)
 
-## ArgoCD Kurulum
+## ArgoCD Kurulumu
 
-Argo Cd chartımızı repomuza pull ediyoruz.
+## ArgoCD Nedir ve Ne İşe Yarar?
+
+ArgoCD, Kubernetes için geliştirilmiş CD aracıdır.
+
+Basitçe; ArgoCD bizim Cluster Bekçimizdir. Sürekli olarak GitHub repomuzu izler ve repoda tanımladığımız Helm Chart ile Kubernetes cluster'ında çalışan gerçek durum arasında bir fark olup olmadığını kontrol eder.
+
+## Kurulum Ve UI
 
 ```bash
 helm pull argo/argo-cd --untar 
 ```
 
-Daha sonrasında ise kendi value-local.yaml dosyamız ile helm install yapıyoruz.
 ```bash
 helm install argocd ./charts/argo-cd \
   --namespace argocd \
   --create-namespace \
   -f ./charts/argo-cd/values-local.yaml
 ```
-Şifremizi decode ediyoruz ui da erişebilmek için
-
-```bash
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-```
-Port Forward Yaptıktan sonra ui kısmımız görünüyor  
 
 ```bash
 KUBECONFIG=./k3s.yaml kubectl -n argocd port-forward --address 0.0.0.0 svc/argocd-server 8082:80
 ```
-Ui kısmında ilk öncelikle argocd yi repomuza bağladık daha sonrasnda ise clusterimizla sync haline geldi
 
 ![alt text](assets/image-38.png)
 
@@ -361,26 +367,82 @@ Ui kısmında ilk öncelikle argocd yi repomuza bağladık daha sonrasnda ise cl
 
 ![alt text](assets/image-40.png)
 
-## Pipeline Ve CD Kısmı
+## GitHub Actions Workflowum
 
-Bu kısımda pipelinem genel olarak oluşturduğum hello-world-app uygulamasındaki src/ dizinini izleyerek oradaki kod her değiştiğinde runnerimi çalıştırıyor daha sonrasında runnerim oluşturduğu image üzerinde versiyon değiştirerek harbora atıyor , hello-world appimin chartı da harbor-cred adlı secretimden bilgileri alıp pullPolicy:Always sayesinde izlediği harbor repositorysinden çekiyor. ArgoCD sync yaptığımda ise podlarım yeni image ile ayağa kalkıyor.
+Pipeline, Build and Deploy Hello App adıyla tanımlanmıştır ve GitOps prensiplerine sadık kalarak, imajı oluşturduktan sonra Helm Chart'ın versiyonunu otomatik olarak günceller.
+
+## Tetiklenme Mekanizması 
+Workflow, kaynakların verimli kullanılması için akıllı filtreleme yapar:
+
+* **Event:** Sadece main dalına yapılan push işlemlerinde çalışır.
+* **Path Filter:** Sadece uygulama kaynak kodunda (`src/hello-world-app/**`) veya Helm Chart dosyalarında (`hello-app/**`) bir değişiklik olduğunda tetiklenir. README güncellemeleri pipeline'ı boşuna çalıştırmaz.
+
+Workflow şu adımları sırasıyla gerçekleştirir:
+
+* **Versiyonlama:**
+Git commit hash'inin ilk 7 karakterini (örn: `a1b2c3d`) alır. Bu, bizim Docker Image Tag'imiz olur. Böylece her kod değişikliği benzersiz bir versiyona sahip olur.
+
+* **Harbor Login & Build:**
+GitHub Secrets içinde saklanan kullanıcı bilgileriyle yerel Harbor Registry'ye giriş yapar.
+`docker build` komutu ile imajı oluşturur ve etiketler: `10.0.2.15:30002/proje/hello-app:a1b2c3d`.
+İmajı Harbor'a push eder.
+
+# GitOps Manifest Güncellemesi 
+
+İmaj yüklendikten sonra, ArgoCD'nin bu değişikliği fark etmesi için Helm Chart'ın `values.yaml` dosyasının güncellenmesi gerekir.
+
+`sed` komutu ile `values.yaml` içindeki `tag:` satırını bulur ve yeni Short SHA ile değiştirir.
+
+## Commit & Push Back
+
+Güncellenen `values.yaml` dosyasını `git commit` ile kaydeder ve repoya geri push eder.
+
+Bu işlem, pipeline'ın görevini tamamladığı ve topu ArgoCD'ye attığı andır.
 
 ## Örnek akış 
 
-Burada yazan değeri v3 den v4 e değiştiriyorum.
+Burada yazan değer v3 den v6 ya değiştirildi.
 
 ![alt text](assets/image-42.png)
 
-Daha sonrasında pipelinem harbora pushlamak üzere çalışıyor yeni versiyon tagı ile , pipelinem bittiği zaman harbora bakıyorum. Saat 3:13 itibariyle yeni imagem oluşmuş durumda.
+GitHub Actions pipeline'ı tetiklenerek, Docker imajı güncel versiyon etiketi  ile derlendi ve otomatik olarak Harbor'a push etti. Workflow başarıyla tamamlandıktan sonra  saat 03:13 itibarıyla yeni imajın Harbor repository'sine eklendiğini görüldü.
 ![alt text](assets/image-45.png)
 
 ![alt text](assets/image-46.png)
 
 ![alt text](assets/image-43.png)
 
-ArgoCD ye gelip sync yapıyorum yeni imagem ile yeni podlarımın oluşması için , yeni podlarım oluştuktan sonrasında ise curl atarak yeni versiyona geçtiğimi doğruluyorum ve CI/CD pipelinemiz başarıyla çalışmış oluyor Harbor image registrysi ile beraber.
+# Sürecin Son Aşaması
+
+* **ArgoCD Senkronizasyonu:** GitHub reposundaki manifest değişikliği ArgoCD üzerinden tetiklenerek , yeni imajın cluster'a dağıtımı başlatıldı.
+* **Pod Yenilenmesi:** Kubernetes, eski podları sonlandırıp yeni versiyonlu imajı içeren podları ayağa kaldırdı.
+* **Doğrulama:** Oluşan yeni podlara gönderilen `curl` istekleri, güncel versiyonun çalıştığını teyit edildi.
 
 ![alt text](assets/image-44.png)
 
+![alt text](assets/image-49.png)
 
-![alt text](assets/image-46.png)
+## Ek görev
+
+# Harbor İmaj Temizliği ve Yaşam Döngüsü
+
+## 1. Mantıksal Temizlik: Tag Retention Policy 
+Harbor arayüzü üzerinden projeye özel bir **Saklama Politikası** tanımlanmıştır.
+
+* **Kural:** Son **60 gün** içinde pushlanmamış veya aktif kullanılmayan imaj etiketleri otomatik olarak silinir.
+* **Sonuç:** Bu işlem imajları diskten silmez, sadece onları "etiketsiz" (**untagged/orphan**) hale getirir.
+
+## 2. Fiziksel Temizlik: Garbage Collection (Helm)
+Etiketi silinen ve "kimsesiz" kalan imaj katmanlarının diskten fiziksel olarak silinip yer açılması için **Garbage Collector (GC)** zamanlanmıştır.
+
+Bu ayar, Harbor'ın `values.yaml` dosyası üzerinden Kubernetes CronJob seviyesinde yapılandırılmıştır:
+
+```yaml
+gc:
+  enabled: true
+  schedule: "0 2 * * *"
+
+```
+![alt text](assets/image-47.png)
+
+![alt text](assets/image-48.png)

@@ -1,0 +1,76 @@
+---
+- name: Configure K3s and Kubernetes resources for Harbor Integration
+  hosts: all
+  become: yes
+  
+  vars:
+    harbor_address: "10.0.2.15:30002"
+    harbor_username: "admin"
+    harbor_password: "Harbor12345"
+    runner_namespace: "arc-systems"
+
+  tasks:
+    - name: Ensure K3s configuration directory exists
+      ansible.builtin.file:
+        path: /etc/rancher/k3s
+        state: directory
+        mode: '0755'
+
+    - name: Configure K3s to trust Harbor as an HTTP insecure registry
+      ansible.builtin.copy:
+        dest: /etc/rancher/k3s/registries.yaml
+        content: |
+          mirrors:
+            "{{ harbor_address }}":
+              endpoint:
+                - "http://{{ harbor_address }}"
+        mode: '0644'
+      notify: Restart K3s
+
+    - name: Flush handlers to restart K3s immediately
+      ansible.builtin.meta: flush_handlers
+
+
+    - name: Create docker-registry secret for ArgoCD/K3s
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: harbor-cred
+            namespace: default
+          type: kubernetes.io/dockerconfigjson
+          stringData:
+            .dockerconfigjson: >-
+              {"auths":{"{{ harbor_address }}":{"username":"{{ harbor_username }}","password":"{{ harbor_password }}","auth":"{{ (harbor_username ~ ':' ~ harbor_password) | b64encode }}"}}}
+
+    - name: Ensure GitHub Actions Runner namespace exists
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ runner_namespace }}"
+
+    - name: Create dind-daemon-config ConfigMap for GitHub Runner
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: dind-daemon-config
+            namespace: "{{ runner_namespace }}"
+          data:
+            daemon.json: |
+              {
+                "insecure-registries": ["{{ harbor_address }}"]
+              }
+  handlers:
+    - name: Restart K3s
+      ansible.builtin.systemd:
+        name: k3s
+        state: restarted
+        daemon_reload: yes

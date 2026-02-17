@@ -19,15 +19,15 @@ jobs:
       IMAGE_NAME: hello-app
 
     steps:
-      - name: Kodu Çek (Checkout)
+      - name: Kodu Çek 
         uses: actions/checkout@v3
 
-      - name: Kısa SHA Oluştur (Versiyonlama için)
+      - name: Kısa SHA Oluştur 
         run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
 
 
-      - name: Docker Login (Harbor - NodePort)
+      - name: Docker Login
         run: |
           echo "${{ secrets.HARBOR_PASSWORD }}" \
             | docker login 10.0.2.15:30002 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
