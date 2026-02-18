@@ -18,7 +18,8 @@ global:
   ## imagePullSecrets:
   ##   - myRegistryKeySecretName
   ##
-  imagePullSecrets: []
+  imagePullSecrets:
+    - harbor-cred
   defaultStorageClass: ""
   ## Security parameters
   ##
