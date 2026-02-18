@@ -95,7 +95,7 @@ diagnosticMode:
 image:
   registry: registry-1.docker.io
   repository: bitnami/wordpress
-  tag: "1a7e28e"
+  tag: "af68e3d"
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
