@@ -138,7 +138,7 @@ wordpressFirstName: FirstName
 wordpressLastName: LastName
 ## @param wordpressBlogName Blog name
 ##
-wordpressBlogName: "Mert'in GitOps Blogu - V3"
+wordpressBlogName: "Mert'in GitOps Blogu - V4"
 ## @param wordpressTablePrefix Prefix to use for WordPress database tables
 ##
 wordpressTablePrefix: wp_
@@ -887,9 +887,9 @@ volumePermissions:
   ## @param volumePermissions.image.pullSecrets OS Shell + Utility image pull secrets
   ##
   image:
-    registry: 10.0.2.15:30002
-    repository: wordpress-custom/wordpress
-    tag: "ilk-imaj"
+    registry: "registry-1.docker.io"
+    repository: "bitnami/os-shell"
+    tag: "latest"
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
     ## Secrets must be manually created in the namespace.
