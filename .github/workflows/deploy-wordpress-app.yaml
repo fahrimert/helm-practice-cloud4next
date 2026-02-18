@@ -1,0 +1,61 @@
+name: Build and Deploy Custom WordPress
+
+on:
+  push:
+    branches: ["test-branch"]
+    paths:
+      - "src/wordpress-custom/**"
+      - "charts/wordpress/**"
+
+jobs:
+  build-push-deploy:
+    runs-on: helm-practice-cicd
+    permissions:
+      contents: write
+
+    env:
+      REGISTRY: 10.0.2.15:30002
+      PROJECT: wordpress-custom
+      IMAGE_NAME: wordpress
+
+    steps:
+      - name: Kodu Çek (Checkout)
+        uses: actions/checkout@v3
+
+      - name: Kısa SHA Oluştur (Versiyonlama)
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Docker Login (Harbor)
+        run: |
+          echo "${{ secrets.HARBOR_PASSWORD }}" \
+            | docker login 10.0.2.15:30002 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
+      - name: Build & Push Docker Image
+        run: |
+          set -euo pipefail
+          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}"
+          
+          cd src/wordpress-custom
+          docker build -t "$IMAGE_TAG" .
+          docker push "$IMAGE_TAG"
+          
+          echo "Image pushed: $IMAGE_TAG"
+
+      - name: Helm values tag güncelle
+        run: |
+          set -euo pipefail
+          sed -i -E '0,/^[[:space:]]*tag:.*/s/^([[:space:]]*tag:[[:space:]]*).*/\1"'${{ env.SHORT_SHA }}'"/' charts/wordpress/values.yaml
+
+      - name: Değişikliği GitHub'a Geri Yolla
+        run: |
+          set -euo pipefail
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "action@github.com"
+          
+          git add charts/wordpress/values.yaml
+          if git diff --cached --quiet; then
+            echo "Değişiklik yok."
+            exit 0
+          fi
+          git commit -m "ci: update wordpress image tag to ${{ env.SHORT_SHA }}"
+          git push
