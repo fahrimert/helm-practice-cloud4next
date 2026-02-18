@@ -95,7 +95,7 @@ diagnosticMode:
 image:
   registry: "10.0.2.15:30002"
   repository: "helm-practice-cicdk3slab/wordpress-custom"
-  tag: "9cb8271"
+  tag: "6a0760e"
   digest: ""
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
