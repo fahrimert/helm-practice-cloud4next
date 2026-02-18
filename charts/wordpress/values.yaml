@@ -94,7 +94,7 @@ diagnosticMode:
 ##
 image:
   repository: 10.0.2.15:30002/helm-practice-cicdk3slab/wordpress-custom
-  tag: "af68e3d"
+  tag: "9cb8271"
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
