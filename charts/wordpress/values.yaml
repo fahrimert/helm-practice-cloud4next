@@ -93,9 +93,8 @@ diagnosticMode:
 ## @param image.debug Specify if debug values should be set
 ##
 image:
-  registry: registry-1.docker.io
-  repository: wordpress-custom/wordpress
-  tag: "25bf6b0"
+  repository: 10.0.2.15:30002/helm-practice-cicdk3slab/wordpress-custom
+  tag: "af68e3d"
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
