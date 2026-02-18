@@ -93,12 +93,10 @@ diagnosticMode:
 ## @param image.debug Specify if debug values should be set
 ##
 image:
-  repository: 10.0.2.15:30002/helm-practice-cicdk3slab/wordpress-custom
+  registry: "10.0.2.15:30002"
+  repository: "helm-practice-cicdk3slab/wordpress-custom"
   tag: "9cb8271"
   digest: ""
-  ## Specify a imagePullPolicy
-  ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
-  ##
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
   ## Secrets must be manually created in the namespace.
