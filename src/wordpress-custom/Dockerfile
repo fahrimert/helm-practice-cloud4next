@@ -1,3 +1,3 @@
 FROM bitnami/wordpress:latest
 
-RUN echo "Custom WordPress Pipeline is Working!" > /mert-ci-test.txt
+RUN echo "CI/CD Pipeline V2: Sistem tam otomatik calisiyor!" > /tmp/mert-ci-test.txt
