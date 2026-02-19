@@ -138,7 +138,7 @@ wordpressFirstName: FirstName
 wordpressLastName: LastName
 ## @param wordpressBlogName Blog name
 ##
-wordpressBlogName: "Mert'in GitOps Blogu - V4"
+wordpressBlogName: "Mert'in GitOps Blogu En Güncel - V4"
 ## @param wordpressTablePrefix Prefix to use for WordPress database tables
 ##
 wordpressTablePrefix: wp_
