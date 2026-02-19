@@ -399,7 +399,7 @@ Güncellenen `values.yaml` dosyasını `git commit` ile kaydeder ve repoya geri 
 
 Bu işlem, pipeline'ın görevini tamamladığı ve topu ArgoCD'ye attığı andır.
 
-## Örnek akış 
+## Örnek akış Hello App için
 
 Burada yazan değer v3 den v6 ya değiştirildi.
 
@@ -421,6 +421,27 @@ GitHub Actions pipeline'ı tetiklenerek, Docker imajı güncel versiyon etiketi 
 ![alt text](assets/image-44.png)
 
 ![alt text](assets/image-49.png)
+
+## Örnek akış Wordpress için
+
+Burada yazan değer v3 den v4 ye değiştirildi.Replica sayısı veya chartta herhangi birşey değiştirilince de bu akış çalışırdı.
+
+![alt text](assets/image-50.png)
+
+GitHub Actions test-branch branchi ile pipeline'ı tetiklenerek, Docker imajı güncel versiyon etiketi  ile derlendi ve otomatik olarak Harbor'a push etti. Workflow başarıyla tamamlandıktan sonra yeni imajın Harbor repository'sine eklendiğini görüldü.
+![alt text](assets/image-51.png)
+
+
+![alt text](assets/image-52.png)
+
+# Sürecin Son Aşaması
+
+* **ArgoCD Senkronizasyonu:** GitHub reposundaki manifest değişikliği ArgoCD üzerinden tetiklenerek , yeni imajın cluster'a dağıtımı başlatıldı.
+* **Pod Yenilenmesi:** Kubernetes, eski podları sonlandırıp yeni versiyonlu imajı içeren podları ayağa kaldırdı.
+
+![alt text](assets/image-53.png)
+
+![alt text](assets/image-54.png)
 
 ## Ek görev
 

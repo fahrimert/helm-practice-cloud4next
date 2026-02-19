@@ -1,3 +1,7 @@
 KUBECONFIG=./k3s.yaml kubectl port-forward svc/hello-app 5000:5000
 KUBECONFIG=./k3s.yaml kubectl -n argocd port-forward --address 0.0.0.0 svc/argocd-server 8083:80
 KUBECONFIG=./k3s.yaml kubectl port-forward svc/harbor -n harbor-system 8082:80
+KUBECONFIG=./k3s.yaml kubectl exec -it deployment/wordpress-custom -n wordpress -- wp option update blogname "Mert'in GitOps Blogu - V4"
+KUBECONFIG=./k3s.yaml  kubectl port-forward svc/wordpress-custom 8087:80 -n wordpress --address 0.0.0.0
+KUBECONFIG=./k3s.yaml helm list -A
+KUBECONFIG=./k3s.yaml helm repo list
