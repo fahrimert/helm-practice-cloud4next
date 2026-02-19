@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: 10.0.2.15:30002/helm-practice-cicdk3slab/hello-app
   pullPolicy: Always
-  tag: "ba91def"
+  tag: "de3e101"
 
 service:
   type: ClusterIP
