@@ -96,7 +96,7 @@ diagnosticMode:
 image:
   registry: "10.0.2.15:30002"
   repository: "wordpress-custom/wordpress"
-  tag: "ffd53a2"
+  tag: "d7af213"
   digest: ""
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
